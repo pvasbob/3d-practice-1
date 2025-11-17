@@ -1,0 +1,168 @@
+React Hooks
+│
+├── 1. useState
+│     ├── Purpose: store reactive values that update UI
+│     ├── Changing state triggers re-render
+│     ├── Example:
+│     │     const [count, setCount] = useState(0);
+│     │     setCount(1); // re-renders component
+│     └── React uses latest state on each render
+│
+├── 2. useEffect
+│     ├── Purpose: run side effects after render
+│     ├── useEffect itself DOES NOT re-render
+│     ├── Effect re-runs when dependency array changes
+│     ├── Example:
+│     │     useEffect(() => {
+│     │       console.log("runs when count changes");
+│     │     }, [count]);
+│     └── If effect calls setState → THEN re-render happens
+│
+└── 3. useRef
+      ├── Purpose: persistent mutable storage (no re-render)
+      ├── behaves like a “static variable”
+      ├── .current is the only property
+      ├── Example:
+      │     const count = useRef(0);
+      │     count.current++;  // persists, no re-render
+      ├── Often holds:
+      │     ├── DOM nodes
+      │     ├── timers
+      │     ├── previous values
+      │     └── external objects (gsap timeline, audio, video)
+      └── Why no re-render?
+            Because React does NOT track ref.current changes.
+
+
+
+
+
+
+DOM Refs
+│
+├── 1. What is a “DOM node”?
+│     └── The actual HTML element object created in the browser.
+│
+├── 2. Why videoRef.current.play() works?
+│     ├── <video> has built-in .play() and .pause() methods.
+│     ├── videoRef.current becomes the <video> DOM element.
+│     └── Example:
+│           const videoRef = useRef(null);
+│           <video ref={videoRef} />
+│           videoRef.current.play();
+│
+├── 3. Callback refs
+│     ├── Also receive the DOM element as parameter
+│     ├── Example:
+│     │     <div ref={el => console.log(el)}></div>
+│     └── “el” is NOT a keyword — it’s just the element passed in.
+│
+└── 4. What can go inside ref={} ?
+      ├── a ref object
+      │     <div ref={myRef} />
+      └── a callback function
+            <div ref={el => myRef.current = el} />
+
+
+
+GSAP Targeting
+│
+├── You can animate via:
+│     ├── DOM element (best)
+│     │     gsap.to(videoRef.current[i], {...})
+│     ├── id selector
+│     │     gsap.to("#box", {...})
+│     └── class selector
+│           gsap.to(".box", {...})
+│
+├── But selectors are fragile in React because:
+│     ├── React may re-create DOM → old selectors point to old nodes
+│     ├── strict mode runs effects twice → animation triggers twice
+│     ├── ".box" may match extra elements unintentionally
+│     ├── order of elements not guaranteed
+│     └── timing issues (selector runs before DOM exists)
+│
+└── Refs are stable:
+      ├── exact elements
+      ├── always correct order
+      ├── never break on re-render
+      ├── safe under StrictMode
+      └── GSAP prefers real DOM nodes → ref gives them directly
+
+
+
+
+
+Ref Arrays
+│
+├── Example:
+│     const boxesRef = useRef([]);
+│
+│     <div ref={el => boxesRef.current[0] = el}></div>
+│     <div ref={el => boxesRef.current[1] = el}></div>
+│
+├── GSAP using stagger:
+│     useEffect(() => {
+│       gsap.to(boxesRef.current, { y: -50, stagger: 0.2 });
+│     }, []);
+│
+└── This is stable + React-correct way.
+
+
+
+
+className Animation (".box")
+│
+├── Works but fragile in React:
+│     gsap.to(".box", { y: -50, stagger: 0.2 });
+│
+├── Problems:
+│     ├── Might select unintended elements
+│     ├── React DOM order can change
+│     ├── Non-React elements may be selected
+│     ├── Selectors may run before DOM exists
+│     └── Strict mode duplicates the effect
+│
+└── Using refs avoids all of this.
+
+
+
+
+Layout
+│
+├── Meaning:
+│     The position and size of an element on the page.
+│
+├── Example properties:
+│     ├── x, y position
+│     ├── width, height
+│     ├── top, left, right, bottom
+│
+├── Only DOM gives layout info:
+│     element.getBoundingClientRect()
+│
+└── React CANNOT give you layout values.
+
+
+
+
+Vanilla HTML/JS
+│
+├── “Vanilla” means:
+│     pure HTML
+│     pure CSS
+│     pure JavaScript
+│
+├── No frameworks:
+│     ❌ no React
+│     ❌ no Vue
+│     ❌ no Angular
+│
+└── Example:
+      const box = document.querySelector(".box");
+      box.style.opacity = 0;
+
+
+useState → reactive data, causes re-render
+useEffect → runs after render, re-runs when dependencies change
+useRef → persistent container, does NOT cause re-render, ideal for DOM
