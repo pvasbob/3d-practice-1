@@ -166,3 +166,95 @@ Vanilla HTML/JS
 useState → reactive data, causes re-render
 useEffect → runs after render, re-runs when dependencies change
 useRef → persistent container, does NOT cause re-render, ideal for DOM
+
+
+
+
+GSAP & ScrollTrigger Q&A
+
+ScrollTrigger watches element existence?
+
+Q: ScrollTrigger does not continuously watch the element, so does it watch if an element with id='video' exists?
+
+A: No. ScrollTrigger only watches scroll position. The element must exist initially for ScrollTrigger to measure it. It does not detect dynamic creation; you would need to call .refresh() if elements appear later.
+
+onComplete behavior in zero-duration animation
+
+Q: In gsap.to() with no properties to animate, does onComplete fire immediately?
+
+A: Yes. onComplete fires only after the animation finishes. Zero-duration animation finishes immediately, so onComplete runs instantly.
+
+ScrollTrigger initial measurement
+
+Q: When does ScrollTrigger measure positions the first time?
+
+A: It measures immediately upon creation, which is often before images load or layout fully stabilizes.
+
+ScrollTrigger.refresh()
+
+Q: Why and when should I call ScrollTrigger.refresh()?
+
+A: Call it whenever layout changes after ScrollTrigger creation (e.g., images load, dynamic content, font load, element resize). Refresh recalculates offsets, heights, start/end positions.
+
+Effect of browser refresh
+
+Q: Does browser refresh recalculate positions?
+
+A: Yes. The DOM is reconstructed, and ScrollTrigger initializes again, measuring all positions anew.
+
+Using ScrollTrigger for dynamic layout changes
+
+Q: For drag/move operations, do I need to call ScrollTrigger.refresh() every time?
+
+A: Only if the element moves. Using trigger.update() or throttling refresh is more efficient than calling full refresh continuously.
+
+GSAP config property order
+
+Q: Does the order of x: 100 and scrollTrigger matter?
+
+A: No. GSAP parses the object as a whole. It reads all properties, creates tween and ScrollTrigger instances independently.
+
+ScrollTrigger independence from GSAP animation
+
+Q: Can ScrollTrigger work without GSAP animation?
+
+A: Yes. ScrollTrigger is a plugin. It can be used independently to fire callbacks based on scroll positions.
+
+Plugin import necessity
+
+Q: Is importing ScrollTrigger necessary?
+
+A: Yes. You must import and register it to guarantee behavior:
+
+import ScrollTrigger from "gsap/ScrollTrigger";
+gsap.registerPlugin(ScrollTrigger);
+
+Note: In some environments or templates, ScrollTrigger may be loaded globally or bundled, making explicit import unnecessary.
+
+ScrollTrigger execution vs animation execution
+
+Q: Does ScrollTrigger execute before the tween?
+
+A: Yes. ScrollTrigger monitors scroll and decides when the tween should start. The tween only runs after ScrollTrigger triggers it.
+
+ScrollTrigger as an event listener
+
+Q: Can ScrollTrigger be used as a self-designed scroll-based event listener?
+
+A: Yes. ScrollTrigger can be used purely with callbacks (onEnter, onLeave, etc.) without animation.
+
+Performance considerations with drag
+
+Q: Dragging an element and calling refresh each time — is it costly?
+
+A: Yes. Full ScrollTrigger.refresh() every frame is CPU intensive. Alternatives:
+
+Use trigger.update() for the specific instance
+
+Debounce/throttle refresh
+
+Use Draggable onDrag callbacks and manual position checks instead of ScrollTrigger
+
+Tree Representation (conceptual):
+
+GSAP + ScrollTrigger ├─ Tween Properties (x, y, opacity, etc.) ├─ scrollTrigger: {} │ ├─ Measures element position upon creation │ ├─ Monitors scroll position │ ├─ Fires callbacks or controls tween start │ └─ Needs refresh() if layout changes └─ Plugin Import & Registration ├─ import ScrollTrigger from "gsap/ScrollTrigger" └─ gsap.registerPlugin(ScrollTrigger)
