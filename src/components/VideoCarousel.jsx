@@ -77,8 +77,6 @@ const VideoCarousel = () => {
                   : "4vw",
             });
 
-            console.log(currentProgress);
-
             gsap.to(span[videoId], {
               width: `${currentProgress}%`,
               backgroundColor: "white",
